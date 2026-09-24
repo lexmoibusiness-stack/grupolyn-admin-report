@@ -65,7 +65,7 @@ Food & Supplies is over budget by 21.5%.
 
 La plantilla ya usa el patrón correcto: la lógica vive en la biblioteca maestra `ProsprScript` y cada hoja solo tiene wrappers de una línea. El despliegue sigue ese mismo patrón:
 
-1. Los archivos de `src/`, excepto `Main.gs`, se agregan a la biblioteca maestra, y se añade `lynAdminBuildMenu()` al `onOpen` de `ProsprScript`. Después se **publica una versión nueva** de la biblioteca.
+1. Los archivos de `src/`, excepto `Main.gs` y `SelfTest.gs`, se agregan a la biblioteca maestra, y se añade `lynAdminBuildMenu()` al `onOpen` de `ProsprScript`. Después se **publica una versión nueva** de la biblioteca.
 2. `Deployer.gs` se ejecuta desde una hoja de control que tiene una pestaña «Clients» con las URLs. Para cada cliente:
    - Comprueba que el archivo abre y que tiene «Monthly Budget».
    - **Si se conoce el ID del script vinculado:** lee su contenido, añade o reemplaza solo `LynAdmin.gs` (los wrappers), fija la versión de la biblioteca en el manifiesto y lo guarda. **No toca ningún otro archivo.**
@@ -76,12 +76,43 @@ La plantilla ya usa el patrón correcto: la lógica vive en la biblioteca maestr
 
 Las **actualizaciones futuras** siguen el mismo camino: se publica la versión N+1 de la biblioteca, se cambia `targetVersion` y se vuelve a ejecutar el despliegue.
 
+### Prueba de extremo a extremo
+
+Como no tenía acceso a la biblioteca maestra real, monté un entorno equivalente:
+
+- **«LyN Master Library»:** una biblioteca propia con el código de `src/`, que hace el papel de la maestra.
+- **«Cliente Prueba 1» y «Cliente Prueba 2»:** dos copias limpias de la plantilla original.
+- **«LyN Deploy Control»:** la hoja de control con el deployer.
+
+Resultado:
+
+1. **Primera pasada:** *"2 deployed"*. Se creó un proyecto vinculado en cada copia, vinculado a la biblioteca v1.
+2. **Segunda pasada sin cambios:** *"0 deployed, 2 already up to date"*. Es idempotente: no duplica nada.
+3. **Se publicó la v2** de la biblioteca y se volvió a desplegar: *"Updated existing project"* en las dos copias. El deployer usó el ID guardado de cada proyecto y no creó proyectos nuevos.
+4. **En las dos copias** apareció el menú Admin sin abrir su código. El desbloqueo, el reporte en pestaña y el borrador funcionaron.
+
+**Lo que enseñó la prueba.** La v1 se publicó sin `Auth.gs`, y todos los clientes fallaron a la vez con `ReferenceError`. Una versión de biblioteca es una foto del código en el momento de publicar, así que un archivo que falta rompe a todos los clientes de golpe. A raíz de eso:
+
+- el `onOpen` inyectado registra el motivo si falla;
+- el manifiesto activa `exceptionLogging`, porque sin eso el error no dejaba ningún registro;
+- corregir el problema fue publicar la v2 y volver a desplegar: los clientes no se editaron a mano.
+
+**Siguiente mejora natural:** una comprobación previa en el deployer que verifique que la versión de la biblioteca contiene todas las funciones necesarias antes de tocar ningún cliente.
+
 ## Supuestos y limitaciones
 
 - El reporte refleja el **mes seleccionado en `Monthly Budget`** (celdas F3/F2) y la vista «Current».
 - La Apps Script API **no permite descubrir** el ID del script vinculado de una hoja a partir de la hoja. Por eso el despliegue acepta una columna con ese ID (lo ideal es que GrupoLyN lo registre al crear cada copia) y, si falta, crea un proyecto vinculado adicional.
 - Requisitos del despliegue: la Apps Script API activada en la cuenta, un proyecto de Google Cloud estándar con esa API habilitada y permiso de edición sobre las hojas de los clientes. Aplican las cuotas diarias de la Apps Script API.
 - **Qué está probado y qué no:**
-  - Probado: la lógica pura (lectura de la hoja, reglas, textos, HTML del correo y generación de wrappers), con los datos reales de enero, mediante `node --test tests/`.
-  - Probado en la hoja real: el menú, el diálogo, la pestaña y el borrador.
-  - **No probado:** el despliegue masivo contra copias reales, porque requiere acceso a la biblioteca maestra y a las copias de los clientes.
+  - **Pruebas automáticas:** 17 pruebas en Node (`node --test tests/`). Cubren la lectura de la hoja, las reglas, los textos, el HTML del correo, la generación de wrappers y el parcheo del manifiesto. Usan los datos reales de enero.
+  - **Probado en la hoja real:**
+    - el menú bloqueado y desbloqueado;
+    - el diálogo con código incorrecto y correcto;
+    - el bloqueo manual;
+    - la pestaña del reporte, que se reemplaza al regenerarla;
+    - el borrador de Gmail.
+  - **Probado en Google con una biblioteca simulada:** el despliegue masivo completo, descrito en la sección anterior.
+  - **No probado:**
+    - la biblioteca maestra real `ProsprScript`, por falta de acceso;
+    - la ruta "ID conocido" sobre el proyecto original de una copia de cliente. Se probó sobre los proyectos que creó el propio deployer.
