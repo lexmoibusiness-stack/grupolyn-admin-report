@@ -22,6 +22,7 @@ Apps Script para la plantilla de plan financiero de GrupoLyN. Tiene tres partes:
 | `src/SelfTest.gs` | `lynSelfTest()`: prueba completa desde el editor (lectura, reporte, pestaña, borrador) sin pasar por el menú |
 | `deploy/Deployer.gs` | Despliegue masivo mediante la Apps Script API |
 | `tests/report.test.js` | 12 pruebas en Node con los datos reales de enero 2025 |
+| `tests/deployer.test.js` | 5 pruebas del despliegue: parcheo del manifiesto (Rhino → V8, versión fijada), URLs, reemplazo de archivos |
 
 Las dos salidas (pestaña y correo) se generan a partir del **mismo modelo de reporte**. Una regla nueva, como otro umbral u otra forma de elegir los conceptos, se cambia en un solo sitio.
 

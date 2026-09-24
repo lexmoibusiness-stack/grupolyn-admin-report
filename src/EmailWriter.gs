@@ -9,8 +9,28 @@ function lynCreateReportDraft_(report, recipient) {
   var draft = GmailApp.createDraft(recipient, subject, lynRenderPlainText_(report), {
     htmlBody: lynRenderEmailHtml_(report)
   });
-  PropertiesService.getDocumentProperties().setProperty(LYN_LAST_EMAIL_KEY, recipient);
+  lynRememberEmail_(recipient);
   return draft;
+}
+
+/**
+ * "Last client email" is a convenience only. Document properties may be
+ * unavailable when this code runs as a library, so it must never break the draft.
+ */
+function lynLastEmail_() {
+  try {
+    return PropertiesService.getDocumentProperties().getProperty(LYN_LAST_EMAIL_KEY) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function lynRememberEmail_(email) {
+  try {
+    PropertiesService.getDocumentProperties().setProperty(LYN_LAST_EMAIL_KEY, email);
+  } catch (e) {
+    console.warn('Could not remember the client email: ' + e);
+  }
 }
 
 /** Pure: report model -> HTML email body (inline styles only; Gmail strips <style>). */

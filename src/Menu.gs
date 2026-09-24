@@ -96,7 +96,7 @@ function lynAdminReportSheet() {
 
 function lynAdminReportEmail() {
   lynRunAsAdmin_(function (ui) {
-    var last = PropertiesService.getDocumentProperties().getProperty(LYN_LAST_EMAIL_KEY) || '';
+    var last = lynLastEmail_();
     var answer = ui.prompt('Gmail draft', 'Client email address' + (last ? ' (leave blank for ' + last + ')' : '') + ':', ui.ButtonSet.OK_CANCEL);
     if (answer.getSelectedButton() !== ui.Button.OK) return;
 

@@ -83,7 +83,7 @@ function runDeployment_(onlyRows) {
   try {
     var sheet = SpreadsheetApp.getActive().getSheetByName(DEPLOY.clientsSheet);
     var data = sheet.getDataRange().getValues();
-    var stubSource = ProsprScript.lynClientStubSource(DEPLOY.librarySymbol);
+    var stubSource = masterLibrary_().lynClientStubSource(DEPLOY.librarySymbol);
     var started = Date.now();
     var done = 0, failed = 0, skipped = 0;
 
@@ -135,9 +135,12 @@ function deployOne_(url, scriptId, stubSource) {
     }
 
     var created = api_('post', '', { title: DEPLOY.projectTitle, parentId: ssId });
+    // Scopes declared explicitly: a project that only holds wrappers gives the
+    // scope auto-detection nothing to scan (the real calls live in the library).
+    var manifest = JSON.stringify({ timeZone: ss.getSpreadsheetTimeZone(), oauthScopes: [] });
     api_('put', '/' + created.scriptId + '/content', {
       files: [
-        { name: 'appsscript', type: 'JSON', source: patchManifest_('{"timeZone":"' + ss.getSpreadsheetTimeZone() + '","runtimeVersion":"V8"}') },
+        { name: 'appsscript', type: 'JSON', source: patchManifest_(manifest) },
         { name: DEPLOY.stubFileName, type: 'SERVER_JS', source: stubSource },
         { name: 'LynAdminTrigger', type: 'SERVER_JS', source: 'function onOpen(e) { ' + DEPLOY.librarySymbol + '.lynAdminBuildMenu(); }\n' }
       ]
@@ -161,9 +164,10 @@ function patchManifest_(source) {
   var libs = manifest.dependencies.libraries = manifest.dependencies.libraries || [];
   var lib = libs.filter(function (l) { return l.userSymbol === DEPLOY.librarySymbol; })[0];
   if (!lib) {
-    lib = { userSymbol: DEPLOY.librarySymbol, libraryId: DEPLOY.libraryScriptId };
+    lib = { userSymbol: DEPLOY.librarySymbol };
     libs.push(lib);
   }
+  lib.libraryId = DEPLOY.libraryScriptId;
   lib.version = String(DEPLOY.targetVersion);
   lib.developmentMode = false;
 
@@ -176,6 +180,14 @@ function patchManifest_(source) {
 }
 
 /** Keeps every other file (only name/type/source: GET returns read-only metadata PUT does not need). */
+/**
+ * The master library as added to THIS deployer project (Libraries → identifier).
+ * Used only to read the wrapper source, so the entry-point list lives in one place.
+ */
+function masterLibrary_() {
+  return ProsprScript;
+}
+
 function upsertFile_(files, file) {
   var out = (files || [])
     .filter(function (f) { return f.name !== file.name; })
