@@ -1,10 +1,20 @@
 # Prueba técnica Grupo LYN: menú Admin y Reporte Comparativo Mensual
 
-Apps Script para la plantilla de plan financiero de GrupoLyN. Tiene tres partes:
+## Resumen
 
-1. Un menú **Admin** con código de acceso.
-2. El **Reporte Comparativo Mensual**, que puede salir en una pestaña o en un borrador de Gmail.
-3. Un script de **despliegue masivo** a las copias de los clientes (bonus).
+**Qué se entrega:**
+
+- **Menú Admin con código de acceso.** El código se guarda como hash, cada desbloqueo dura 6 horas por usuario y hoja, y cada acción vuelve a comprobar la sesión en el servidor.
+- **Reporte Comparativo Mensual.** Marca las categorías con una desviación de 15 % o más, y al menos $50, e indica los conceptos responsables. Sale como pestaña y como borrador de Gmail, ambos generados desde el mismo modelo.
+- **Despliegue masivo mediante la Apps Script API.**
+
+**Tres hallazgos:**
+
+1. **El script de la plantilla no se ejecutaba.** Estaba en Rhino, un runtime que Google ya apagó. Lo migré a V8, y el despliegue hace esa migración en cada copia de cliente.
+2. **El `Code.gs` anterior revelaba su código de admin (`PROSPR2025`) al primer intento** y había quitado el menú propio de la plantilla. Ambas cosas están corregidas.
+3. **El bonus está probado en Google, no solo diseñado.** Usé una biblioteca que simula la maestra y dos copias limpias de la plantilla, y verifiqué la creación, que una segunda pasada no duplica nada y la actualización a una versión nueva.
+
+El código está en 11 archivos pequeños, uno por responsabilidad, con 17 pruebas automáticas. El detalle sigue abajo.
 
 ## Estructura
 
