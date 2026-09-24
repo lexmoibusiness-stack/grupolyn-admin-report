@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; margin: 4px 2px; }
+      label { display: block; margin: 8px 0 4px; color: #444; }
+      input { width: 100%; box-sizing: border-box; padding: 7px; font-size: 14px; }
+      .actions { margin-top: 14px; text-align: right; }
+      button { padding: 7px 14px; margin-left: 6px; cursor: pointer; }
+      .primary { background: #1a73e8; color: #fff; border: 0; border-radius: 4px; }
+      #msg { min-height: 18px; margin-top: 10px; }
+      .err { color: #c5221f; } .ok { color: #188038; }
+    </style>
+  </head>
+  <body>
+    <form id="f">
+      <? if (mode === 'set') { ?>
+        <label for="code">New admin code (min. 6 characters)</label>
+        <input id="code" type="password" autocomplete="new-password" required autofocus>
+        <label for="confirm">Repeat the code</label>
+        <input id="confirm" type="password" autocomplete="new-password" required>
+      <? } else { ?>
+        <label for="code">Enter the admin code</label>
+        <input id="code" type="password" autocomplete="current-password" required autofocus>
+      <? } ?>
+      <div id="msg"></div>
+      <div class="actions">
+        <button type="button" onclick="google.script.host.close()">Cancel</button>
+        <button type="submit" class="primary" id="go">OK</button>
+      </div>
+    </form>
+    <script>
+      var MODE = <?= mode ?>;
+      var form = document.getElementById('f');
+      var msg = document.getElementById('msg');
+      var go = document.getElementById('go');
+
+      function show(text, ok) { msg.textContent = text; msg.className = ok ? 'ok' : 'err'; }
+
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        go.disabled = true;
+        show('Checking…', true);
+        var runner = google.script.run
+          .withSuccessHandler(function (res) {
+            show(res.message, res.ok);
+            if (res.ok) { setTimeout(google.script.host.close, 900); } else { go.disabled = false; }
+          })
+          .withFailureHandler(function (err) { show(err.message, false); go.disabled = false; });
+        var code = document.getElementById('code').value;
+        if (MODE === 'set') {
+          runner.lynAdminSaveCode(code, document.getElementById('confirm').value);
+        } else {
+          runner.lynAdminSubmitCode(code);
+        }
+      });
+    </script>
+  </body>
+</html>
