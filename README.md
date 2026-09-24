@@ -18,7 +18,8 @@ Apps Script para la plantilla de plan financiero de GrupoLyN. Tiene tres partes:
 | `src/SheetWriter.gs` | Genera el reporte como pestaña con formato |
 | `src/EmailWriter.gs` | Genera el reporte como borrador de Gmail en HTML, listo para el cliente |
 | `src/CodeDialog.html` | Diálogo con campo de contraseña oculto |
-| `src/Main.gs` | `onOpen`: restaura el menú de la plantilla y añade el menú Admin |
+| `src/Main.gs` | `onOpen`: construye el menú Admin primero y después restaura el menú de la plantilla |
+| `src/SelfTest.gs` | `lynSelfTest()`: prueba completa desde el editor (lectura, reporte, pestaña, borrador) sin pasar por el menú |
 | `deploy/Deployer.gs` | Despliegue masivo mediante la Apps Script API |
 | `tests/report.test.js` | 12 pruebas en Node con los datos reales de enero 2025 |
 
