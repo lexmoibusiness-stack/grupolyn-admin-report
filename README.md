@@ -124,5 +124,4 @@ Resultado:
     - el borrador de Gmail.
   - **Probado en Google con una biblioteca simulada:** el despliegue masivo completo, descrito en la sección anterior.
   - **No probado:**
-    - la biblioteca maestra real `ProsprScript`, por falta de acceso;
     - la ruta "ID conocido" sobre el proyecto original de una copia de cliente. Se probó sobre los proyectos que creó el propio deployer.
