@@ -1,4 +1,4 @@
-# Prueba técnica GrupoLyN: menú Admin y Reporte Comparativo Mensual
+# Prueba técnica Grupo LYN: menú Admin y Reporte Comparativo Mensual
 
 Apps Script para la plantilla de plan financiero de GrupoLyN. Tiene tres partes:
 
