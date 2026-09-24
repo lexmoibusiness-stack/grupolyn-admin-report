@@ -26,6 +26,8 @@ Las dos salidas (pestaña y correo) se generan a partir del **mismo modelo de re
 
 ## Enfoque
 
+**Hallazgo previo: el proyecto no se ejecutaba.** El script de la plantilla estaba configurado con el runtime **Rhino** (`DEPRECATED_ES5`), que Google ya apagó. Todas las ejecuciones salían como "Inhabilitado" y al ejecutarlas a mano el error era *"The Rhino runtime is deprecated and no longer supported"*. Esto le pasaba a todo el proyecto: ni el menú anterior ni los scripts de `ProsprScript` corrían. El proyecto se migró a **V8**, y el despliegue masivo hace la misma migración en cada copia de cliente.
+
 **Control de acceso.** Mejora sobre el `Code.gs` anterior:
 
 - El código no se guarda en texto plano ni está escrito en el código fuente. Solo existe su hash SHA-256 con sal, guardado en Script Properties. Es un único código para el equipo, no uno por usuario.

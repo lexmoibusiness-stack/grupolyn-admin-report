@@ -148,9 +148,15 @@ function deployOne_(url, scriptId, stubSource) {
   }
 }
 
-/** Pins the master library to the target version; merges scopes only if the manifest declares them. */
+/**
+ * Pins the master library to the target version and moves the project to V8:
+ * the template ships on Rhino (DEPRECATED_ES5), which Google has shut down, so
+ * without this nothing in the client project runs at all ("Disabled" executions).
+ * Merges scopes only if the manifest declares them.
+ */
 function patchManifest_(source) {
   var manifest = JSON.parse(source);
+  manifest.runtimeVersion = 'V8';
   manifest.dependencies = manifest.dependencies || {};
   var libs = manifest.dependencies.libraries = manifest.dependencies.libraries || [];
   var lib = libs.filter(function (l) { return l.userSymbol === DEPLOY.librarySymbol; })[0];
