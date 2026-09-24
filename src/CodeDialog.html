@@ -31,7 +31,7 @@
       </div>
     </form>
     <script>
-      var MODE = <?= mode ?>;
+      var MODE = <?!= JSON.stringify(mode) ?>;
       var form = document.getElementById('f');
       var msg = document.getElementById('msg');
       var go = document.getElementById('go');

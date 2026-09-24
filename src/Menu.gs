@@ -28,9 +28,18 @@ function lynAdminBuildMenu() {
       .addItem('Lock admin tools', 'lynAdminLock');
   } else {
     menu.addItem('🔒 Unlock admin tools…', 'lynAdminUnlock');
-    if (!lynIsAdminCodeConfigured_()) menu.addItem('Set up admin code (owner)…', 'lynAdminSetCode');
+    if (lynCodeMissingSafe_()) menu.addItem('Set up admin code (owner)…', 'lynAdminSetCode');
   }
   menu.addToUi();
+}
+
+/** Never lets a Properties error (e.g. restricted trigger context) stop the menu from rendering. */
+function lynCodeMissingSafe_() {
+  try {
+    return !lynIsAdminCodeConfigured_();
+  } catch (e) {
+    return true; // lynAdminSetCode re-checks on the server anyway
+  }
 }
 
 function lynAdminUnlock() {
